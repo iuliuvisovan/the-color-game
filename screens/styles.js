@@ -5,7 +5,8 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#03A9F4',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 16
   },
   title: {
     fontSize: 25,
@@ -71,11 +72,11 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-    backgroundColor: '#fff',
+    backgroundColor: '#fff'
   },
   changeColorText: {
     fontSize: 28,
     marginTop: -8,
-    marginLeft: -3,
+    marginLeft: -3
   }
 });
