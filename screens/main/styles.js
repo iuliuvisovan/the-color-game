@@ -4,15 +4,20 @@ export default StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: '#03A9F4',
+    justifyContent: 'space-between'
+  },
+  contentWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    flex: 1
   },
   title: {
     fontSize: 25,
     color: '#fff'
   },
   input: {
+    flexDirection: 'row',
     borderWidth: 1,
     borderColor: 'red',
     width: 120,
@@ -23,7 +28,7 @@ export default StyleSheet.create({
     paddingHorizontal: 12,
     color: '#fff',
     fontSize: 16,
-    marginTop: 16
+    marginTop: 16,
   },
   guessButton: {
     padding: 24,
