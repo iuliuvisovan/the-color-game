@@ -14,7 +14,7 @@ export default createAppContainer(
           backgroundColor: (navigation.state.params || {}).currentColor
         },
         headerTitleStyle: {
-          color: isDarkColor((navigation.state.params || {}).currentColor || '#ffffff') ? '#fff' : '#444',
+          color: isDarkColor((navigation.state.params || {}).currentColor || '#ffffff') ? '#fff' : '#14181c',
           fontWeight: '500'
         }
       })

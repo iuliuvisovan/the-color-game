@@ -23,6 +23,8 @@ const getRandomColor = () => {
   return color;
 };
 
+const darkColor = '#14181c';
+
 export default class MainScreen extends Component {
   state = {
     guessedValues: [],
@@ -50,20 +52,9 @@ export default class MainScreen extends Component {
     const guessedRgb = this.getRgbIntsForHex(guessedValue.substr(1));
     const actualRgb = this.getRgbIntsForHex(actualValue.substr(1));
 
-    console.log('actualRgb.r ', actualRgb.r);
-    console.log('guessedRgb.r ', guessedRgb.r);
-    console.log('actualRgb.g ', actualRgb.g);
-    console.log('guessedRgb.g ', guessedRgb.g);
-    console.log('actualRgb.b ', actualRgb.b);
-    console.log('guessedRgb.b ', guessedRgb.b);
-
     const redDifference = Math.abs(actualRgb.r - guessedRgb.r);
     const greenDifference = Math.abs(actualRgb.g - guessedRgb.g);
     const blueDifference = Math.abs(actualRgb.b - guessedRgb.b);
-
-    console.log('redDifference', redDifference);
-    console.log('greenDifference', greenDifference);
-    console.log('blueDifference', blueDifference);
 
     const distance = redDifference + greenDifference + blueDifference;
 
@@ -71,8 +62,6 @@ export default class MainScreen extends Component {
   };
 
   getRgbIntsForHex = hex => {
-    console.log('hex', hex);
-
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 6), 16);
@@ -81,13 +70,13 @@ export default class MainScreen extends Component {
   };
 
   getPointsForDistance = distance => {
-    if (distance < 500) {
+    if (distance < 50) {
       return 5;
-    } else if (distance < 1000) {
+    } else if (distance < 100) {
       return 4;
-    } else if (distance < 1500) {
+    } else if (distance < 250) {
       return 3;
-    } else if (distance < 3000) {
+    } else if (distance < 500) {
       return 2;
     }
 
@@ -103,8 +92,6 @@ export default class MainScreen extends Component {
 
     LayoutAnimation.easeInEaseOut();
     guessedValues.push(guessingValue);
-    console.log('guessingValue', guessingValue);
-    console.log('currentColor', currentColor);
 
     const shadesAway = this.getDistanceForGuess(guessingValue, currentColor);
     const points = this.getPointsForDistance(shadesAway);
@@ -127,7 +114,7 @@ export default class MainScreen extends Component {
     const hasAnotherGo = guessedValues.length < 3;
 
     const pointTexts = {
-      5: `Incredible!! Your guess is ${shadesAway} shades away from the actual color.`,
+      5: (hasAnotherGo ? `Incredible!!` : `Niice!`) + `Your guess is ${shadesAway} shades away from the actual color.`,
       4: `Congrats! Your guess is ${shadesAway} shades away from the actual color.`,
       3: `Nice! You got to ${shadesAway} shades away from the actual color.`,
       2: `You're ${shadesAway} shades from the actual color.`,
@@ -175,12 +162,11 @@ export default class MainScreen extends Component {
 
   render() {
     const { guessingValue, guessedValues, showGuessResult, currentColor, showFinalResult, points } = this.state;
-    const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#444';
+    const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#14181c';
 
     return (
       <View style={[styles.wrapper, { backgroundColor: currentColor }]}>
         <View style={styles.contentWrapper}>
-          <Text>{currentColor}</Text>
           {guessedValues.length == 0 && (
             <TouchableOpacity onPress={this.changeColor} style={styles.changeColor}>
               <Text style={[styles.changeColorText, { color: currentColor }]}>↻</Text>
@@ -198,12 +184,12 @@ export default class MainScreen extends Component {
               <Text
                 style={[
                   styles.guessTitle,
-                  { fontSize: 14, marginBottom: -20, color: isDarkColor(x || '#ffffff') ? '#fff' : '#444' }
+                  { fontSize: 14, marginBottom: -20, color: isDarkColor(x || '#ffffff') ? '#fff' : darkColor }
                 ]}
               >
                 Guess #{i + 1}
               </Text>
-              <Text style={[styles.guessTitle, { color: isDarkColor(x || '#ffffff') ? '#fff' : '#444' }]}>
+              <Text style={[styles.guessTitle, { color: isDarkColor(x || '#ffffff') ? '#fff' : darkColor }]}>
                 {'\n'} {x}
               </Text>
             </View>
@@ -215,10 +201,12 @@ export default class MainScreen extends Component {
               </Text>
             </>
           )}
-          <View style={[styles.input, { borderColor: textColor, color: textColor }]} value={guessingValue}>
-            <Text style={{ color: textColor, fontSize: 18 }}>{guessingValue}</Text>
-            <Blinker color={textColor} />
-          </View>
+          {!showFinalResult && (
+            <View style={[styles.input, { borderColor: textColor, color: textColor }]} value={guessingValue}>
+              <Text style={{ color: textColor, fontSize: 18 }}>{guessingValue}</Text>
+              <Blinker color={textColor} />
+            </View>
+          )}
         </View>
         <HexKeyboard disabled={showFinalResult} showsNextButton={showFinalResult} onKeyPress={this.handleKeyPress} />
       </View>
