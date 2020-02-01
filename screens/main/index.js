@@ -9,8 +9,7 @@ import getRandomColor from '../../components/random-color';
 export default class MainScreen extends Component {
   state = {
     guessedValues: [],
-    guessingValue: '#',
-    currentColor: '#FFC107',
+    guessingValue: '',
     attempting: true,
     showGuessResult: false,
     currentRound: 1,
@@ -20,25 +19,31 @@ export default class MainScreen extends Component {
   };
 
   componentDidMount() {
-    setTimeout(() => {
-      LayoutAnimation.easeInEaseOut();
-      this.setState({ showsQuestion: true });
-      setTimeout(() => {
+    setTimeout(
+      () => {
         LayoutAnimation.easeInEaseOut();
-        this.setState({ showsUIElements: true });
-      }, 1500);
-    }, 1000);
+        this.setState({ showsQuestion: true });
+        setTimeout(
+          () => {
+            LayoutAnimation.easeInEaseOut();
+            this.setState({ showsUIElements: true });
+          },
+          __DEV__ ? 100 : 1500
+        );
+      },
+      __DEV__ ? 100 : 1000
+    );
   }
 
   changeColor = () => {
     const currentColor = getRandomColor();
     this.setState({ currentColor });
-    this.props.navigation.setParams({ currentColor });
+    this.props.navigation.setParams({ currentColor: '#' + currentColor });
   };
 
   getDistanceForGuess = (guessedValue, actualValue) => {
-    const guessedRgb = this.getRgbIntsForHex(guessedValue.substr(1));
-    const actualRgb = this.getRgbIntsForHex(actualValue.substr(1));
+    const guessedRgb = this.getRgbIntsForHex(guessedValue);
+    const actualRgb = this.getRgbIntsForHex(actualValue);
 
     const redDifference = Math.abs(actualRgb.r - guessedRgb.r);
     const greenDifference = Math.abs(actualRgb.g - guessedRgb.g);
@@ -62,9 +67,9 @@ export default class MainScreen extends Component {
       return 5;
     } else if (distance < 60) {
       return 4;
-    } else if (distance < 250) {
+    } else if (distance < 100) {
       return 3;
-    } else if (distance < 500) {
+    } else if (distance < 150) {
       return 2;
     }
 
@@ -73,7 +78,7 @@ export default class MainScreen extends Component {
 
   guess = () => {
     const { guessingValue, guessedValues, currentColor } = this.state;
-    if (!guessingValue.includes('#') || guessingValue.length != 7) {
+    if (guessingValue.length != 6) {
       Alert.alert('Invalid hex length', 'Your color must be a 6-digit hexadecimal string.');
       return;
     }
@@ -84,7 +89,7 @@ export default class MainScreen extends Component {
     const shadesAway = this.getDistanceForGuess(guessingValue, currentColor);
     const points = this.getPointsForDistance(shadesAway);
 
-    this.setState({ guessingValue: '#', attempting: false, shadesAway, points });
+    this.setState({ guessingValue: '', attempting: false, shadesAway, points });
 
     setTimeout(() => {
       LayoutAnimation.easeInEaseOut();
@@ -126,7 +131,7 @@ export default class MainScreen extends Component {
   handleKeyPress = key => {
     const { guessingValue } = this.state;
     if (key == '⌫') {
-      if (guessingValue == '#') {
+      if (guessingValue.length == 0) {
         return;
       }
       this.setState({ guessingValue: guessingValue.substr(0, guessingValue.length - 1) });
@@ -138,11 +143,8 @@ export default class MainScreen extends Component {
     }
 
     let formattedText = guessingValue.toUpperCase();
-    if (!formattedText.includes('#')) {
-      formattedText = '#' + formattedText;
-    }
 
-    if (formattedText.length == 7) {
+    if (formattedText.length == 6) {
       return;
     }
     this.setState({ guessingValue: formattedText + key });
@@ -162,7 +164,7 @@ export default class MainScreen extends Component {
     const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#14181c';
 
     return (
-      <View style={[styles.wrapper, { backgroundColor: currentColor }]}>
+      <View style={[styles.wrapper, { backgroundColor: '#' + currentColor }]}>
         <View style={styles.contentWrapper}>
           {guessedValues.length == 0 && (
             <TouchableOpacity onPress={this.changeColor} style={styles.changeColor}>
@@ -177,7 +179,7 @@ export default class MainScreen extends Component {
                   key={i}
                   style={[
                     styles.guess,
-                    { backgroundColor: x },
+                    { backgroundColor: '#' + x },
                     guessedValues.length > i + 1 ? { width: 100, height: 60 } : {}
                   ]}
                 >
@@ -191,10 +193,15 @@ export default class MainScreen extends Component {
                       }
                     ]}
                   >
-                    Guess #{i + 1}
+                    Guess #{i + 1}:
                   </Text>
-                  <Text style={[styles.guessTitle, { color: isDarkColor(x || '#ffffff') ? '#fff' : global.darkColor }]}>
-                    {'\n'} {x}
+                  <Text
+                    style={[
+                      styles.guessTitle,
+                      { color: isDarkColor('#' + x || '#ffffff') ? '#fff' : global.darkColor }
+                    ]}
+                  >
+                    {'\n'} #{x}
                   </Text>
                 </View>
               ))}
@@ -206,16 +213,27 @@ export default class MainScreen extends Component {
                 </>
               )}
               {!showFinalResult && (
-                <View style={[styles.input, { borderColor: textColor, color: textColor }]} value={guessingValue}>
-                  <Text style={{ color: textColor, fontSize: 18 }}>{guessingValue}</Text>
-                  <Blinker color={textColor} />
+                <View style={styles.inputWrapper}>
+                  <Text style={{ color: textColor, fontSize: 18, marginRight: 4, marginLeft: -12 }}>#</Text>
+                  <View
+                    style={[styles.input, { borderColor: textColor + '44', color: textColor }]}
+                    value={guessingValue}
+                  >
+                    <Text style={{ color: global.darkColor, fontSize: 18, letterSpacing: 2 }}>{guessingValue}</Text>
+                    <Blinker color={'#f00'} />
+                  </View>
                 </View>
               )}
             </>
           )}
         </View>
         {showsUIElements && (
-          <HexKeyboard disabled={showFinalResult} showsNextButton={showFinalResult} onKeyPress={this.handleKeyPress} />
+          <HexKeyboard
+            color={'#f00'}
+            disabled={showFinalResult}
+            showsNextButton={showFinalResult}
+            onKeyPress={this.handleKeyPress}
+          />
         )}
       </View>
     );

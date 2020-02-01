@@ -1,12 +1,14 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const buttonWidth = Dimensions.get('screen').width / 6 - 5;
+const buttonWidth = Dimensions.get('screen').width / 7 - 6;
 
 export default StyleSheet.create({
   wrapper: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 8
+    padding: 8,
+    paddingBottom: 6,
+    justifyContent: 'center'
   },
   button: {
     width: buttonWidth,
@@ -16,13 +18,18 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
-    margin: 1
+    margin: 2
   },
   buttonText: {
     fontSize: 24,
     color: '#fff'
   },
-  guessButton: {
+  bigButton: {
     width: buttonWidth * 2 + 2
+  },
+  arrow: {
+    position: 'absolute',
+    top: -25,
+    left: Dimensions.get('screen').width / 2 - 8
   }
 });

@@ -19,10 +19,12 @@ const StackNavigator = createAppContainer(
       navigationOptions: ({ navigation }) => ({
         title: `Round ${(navigation.state.params || {}).currentRound || 1}/5`,
         headerStyle: {
-          backgroundColor: (navigation.state.params || {}).currentColor || global.currentColor
+          backgroundColor: (navigation.state.params || {}).currentColor || '#' + global.currentColor
         },
         headerTitleStyle: {
-          color: isDarkColor((navigation.state.params || {}).currentColor || global.currentColor) ? '#fff' : '#14181c',
+          color: isDarkColor((navigation.state.params || {}).currentColor || '#' + global.currentColor)
+            ? '#fff'
+            : '#14181c',
           fontWeight: '500'
         }
       })

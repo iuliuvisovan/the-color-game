@@ -16,19 +16,23 @@ export default StyleSheet.create({
     fontSize: 25,
     color: '#fff'
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16
+  },
   input: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: 'red',
-    width: 120,
+    width: 100,
     borderRadius: 6,
     borderColor: '#fff',
     borderWidth: 2,
     padding: 8,
-    paddingHorizontal: 12,
-    color: '#fff',
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
     fontSize: 16,
-    marginTop: 16,
+    overflow: 'hidden'
   },
   guessButton: {
     padding: 24,
@@ -83,5 +87,16 @@ export default StyleSheet.create({
     fontSize: 28,
     marginTop: -8,
     marginLeft: -3
+  },
+  colors: {
+    position: 'absolute',
+    top: 0,
+    left: 7,
+    flexDirection: 'row'
+  },
+  color: {
+    width: 27,
+    height: 50,
+    opacity: 0.25
   }
 });

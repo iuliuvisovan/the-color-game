@@ -6,20 +6,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default class HexKeyboard extends Component {
   render() {
-    const { showsNextButton } = this.props;
+    const { showsNextButton, color } = this.props;
     const guessButton = showsNextButton ? 'Next round' : 'Guess!';
-    const keys = [1, 2, 3, 4, 5, '⌫', 6, 7, 8, 9, guessButton, 'A', 'B', 'C', 'D', 'E', 'F'];
+    const keys = [1, 2, 3, 4, 5, '⌫', 6, 7, 8, 9, 0, guessButton, 'A', 'B', 'C', 'D', 'E', 'F'];
 
     return (
       <View style={styles.wrapper}>
+        <View style={styles.arrow}>
+          <Text style={{ color, fontSize: 24, transform: [{ rotate: '-90deg' }] }}>›</Text>
+        </View>
         {keys.map(key => (
           <TouchableOpacity
             onPress={() => this.props.onKeyPress(key)}
             activeOpacity={0.45}
             key={key}
-            style={[styles.button, key.length > 3 ? styles.guessButton : {}]}
+            style={[styles.button, key.length > 1 || key == '⌫' ? styles.bigButton : {}]}
           >
-            <Text style={styles.buttonText}>{key}</Text>
+            <Text style={[styles.buttonText, { color: '#fff' }]}>{key}</Text>
           </TouchableOpacity>
         ))}
         <LinearGradient
