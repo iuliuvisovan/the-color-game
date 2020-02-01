@@ -1,29 +1,10 @@
 import isDarkColor from 'is-dark-color';
 import React, { Component } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  KeyboardAvoidingView,
-  LayoutAnimation,
-  UIManager,
-  Alert,
-  TouchableOpacity
-} from 'react-native';
+import { View, Text, LayoutAnimation, Alert, TouchableOpacity } from 'react-native';
 import styles from './styles';
 import HexKeyboard from '../../components/hex-keyboard';
 import Blinker from '../../components/blinker';
-
-const getRandomColor = () => {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
-const darkColor = '#14181c';
+import getRandomColor from '../../components/random-color';
 
 export default class MainScreen extends Component {
   state = {
@@ -32,14 +13,21 @@ export default class MainScreen extends Component {
     currentColor: '#FFC107',
     attempting: true,
     showGuessResult: false,
-    currentRound: 1
+    currentRound: 1,
+    currentColor: global.currentColor,
+    showsQuestion: false,
+    showsUIElements: false
   };
 
   componentDidMount() {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-    const currentColor = getRandomColor();
-    this.setState({ currentColor });
-    this.props.navigation.setParams({ currentColor });
+    setTimeout(() => {
+      LayoutAnimation.easeInEaseOut();
+      this.setState({ showsQuestion: true });
+      setTimeout(() => {
+        LayoutAnimation.easeInEaseOut();
+        this.setState({ showsUIElements: true });
+      }, 1500);
+    }, 1000);
   }
 
   changeColor = () => {
@@ -70,9 +58,9 @@ export default class MainScreen extends Component {
   };
 
   getPointsForDistance = distance => {
-    if (distance < 50) {
+    if (distance < 30) {
       return 5;
-    } else if (distance < 100) {
+    } else if (distance < 60) {
       return 4;
     } else if (distance < 250) {
       return 3;
@@ -114,10 +102,10 @@ export default class MainScreen extends Component {
     const hasAnotherGo = guessedValues.length < 3;
 
     const pointTexts = {
-      5: (hasAnotherGo ? `Incredible!!` : `Niice!`) + `Your guess is ${shadesAway} shades away from the actual color.`,
+      5: (hasAnotherGo ? `Incredible!!` : `Niice!`) + ` Your guess is ${shadesAway} shades away from the actual color.`,
       4: `Congrats! Your guess is ${shadesAway} shades away from the actual color.`,
-      3: `Nice! You got to ${shadesAway} shades away from the actual color.`,
-      2: `You're ${shadesAway} shades from the actual color.`,
+      3: `You're ${shadesAway} shades away from the actual color.`,
+      2: `You're ${shadesAway} shades away from the actual color.`,
       1: `You're ${shadesAway} shades away from the actual color.`
     };
 
@@ -161,7 +149,16 @@ export default class MainScreen extends Component {
   };
 
   render() {
-    const { guessingValue, guessedValues, showGuessResult, currentColor, showFinalResult, points } = this.state;
+    const {
+      guessingValue,
+      guessedValues,
+      showGuessResult,
+      currentColor,
+      showFinalResult,
+      showsQuestion,
+      showsUIElements,
+      points
+    } = this.state;
     const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#14181c';
 
     return (
@@ -172,43 +169,54 @@ export default class MainScreen extends Component {
               <Text style={[styles.changeColorText, { color: currentColor }]}>↻</Text>
             </TouchableOpacity>
           )}
-          <Text style={[styles.title, { color: textColor }]}>What color is this?</Text>
-          {guessedValues.map((x, i) => (
-            <View
-              style={[
-                styles.guess,
-                { backgroundColor: x },
-                guessedValues.length > i + 1 ? { width: 100, height: 60 } : {}
-              ]}
-            >
-              <Text
-                style={[
-                  styles.guessTitle,
-                  { fontSize: 14, marginBottom: -20, color: isDarkColor(x || '#ffffff') ? '#fff' : darkColor }
-                ]}
-              >
-                Guess #{i + 1}
-              </Text>
-              <Text style={[styles.guessTitle, { color: isDarkColor(x || '#ffffff') ? '#fff' : darkColor }]}>
-                {'\n'} {x}
-              </Text>
-            </View>
-          ))}
-          {showGuessResult && (
+          {showsQuestion && <Text style={[styles.title, { color: textColor }]}>What color is this?</Text>}
+          {showsUIElements && (
             <>
-              <Text style={[styles.guessDescription, { color: textColor }]}>
-                {this.getTextForGuess()} {showFinalResult && `You got ${points} points for this round.`}
-              </Text>
+              {guessedValues.map((x, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.guess,
+                    { backgroundColor: x },
+                    guessedValues.length > i + 1 ? { width: 100, height: 60 } : {}
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.guessTitle,
+                      {
+                        fontSize: 14,
+                        marginBottom: -20,
+                        color: isDarkColor(x || '#ffffff') ? '#fff' : global.darkColor
+                      }
+                    ]}
+                  >
+                    Guess #{i + 1}
+                  </Text>
+                  <Text style={[styles.guessTitle, { color: isDarkColor(x || '#ffffff') ? '#fff' : global.darkColor }]}>
+                    {'\n'} {x}
+                  </Text>
+                </View>
+              ))}
+              {showGuessResult && (
+                <>
+                  <Text style={[styles.guessDescription, { color: textColor }]}>
+                    {this.getTextForGuess()} {showFinalResult && `You got ${points} points for this round.`}
+                  </Text>
+                </>
+              )}
+              {!showFinalResult && (
+                <View style={[styles.input, { borderColor: textColor, color: textColor }]} value={guessingValue}>
+                  <Text style={{ color: textColor, fontSize: 18 }}>{guessingValue}</Text>
+                  <Blinker color={textColor} />
+                </View>
+              )}
             </>
           )}
-          {!showFinalResult && (
-            <View style={[styles.input, { borderColor: textColor, color: textColor }]} value={guessingValue}>
-              <Text style={{ color: textColor, fontSize: 18 }}>{guessingValue}</Text>
-              <Blinker color={textColor} />
-            </View>
-          )}
         </View>
-        <HexKeyboard disabled={showFinalResult} showsNextButton={showFinalResult} onKeyPress={this.handleKeyPress} />
+        {showsUIElements && (
+          <HexKeyboard disabled={showFinalResult} showsNextButton={showFinalResult} onKeyPress={this.handleKeyPress} />
+        )}
       </View>
     );
   }
