@@ -34,19 +34,18 @@ export default StyleSheet.create({
     fontSize: 16,
     overflow: 'hidden'
   },
-  guessButton: {
-    padding: 24,
-    paddingVertical: 8,
+  newGameButton: {
+    padding: 8,
+    paddingHorizontal: 14,
     borderRadius: 24,
-    marginTop: 24,
+    marginTop: 75,
     borderWidth: 2,
-    borderColor: '#fff',
-    backgroundColor: '#fff2'
+    backgroundColor: '#14181c'
   },
-  guessButtonText: {
-    fontSize: 18,
+  newGameButtonText: {
+    fontSize: 16,
     color: '#fff',
-    fontWeight: '900'
+    fontWeight: '700'
   },
   guessTitle: {
     color: '#fff',

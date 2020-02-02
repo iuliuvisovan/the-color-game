@@ -12,13 +12,21 @@ export default class MainScreen extends Component {
     guessingValue: '',
     attempting: true,
     showGuessResult: false,
+    showFinalResult: false,
     currentRound: 1,
     currentColor: global.currentColor,
     showsQuestion: false,
-    showsUIElements: false
+    showsUIElements: false,
+    allRoundsPoints: [],
+    currentRoundPoints: 0
   };
 
   componentDidMount() {
+    this.doInitialAnimation();
+  }
+
+  doInitialAnimation = () => {
+    const inDevelopment = false;
     setTimeout(
       () => {
         LayoutAnimation.easeInEaseOut();
@@ -28,54 +36,17 @@ export default class MainScreen extends Component {
             LayoutAnimation.easeInEaseOut();
             this.setState({ showsUIElements: true });
           },
-          __DEV__ ? 100 : 1500
+          inDevelopment ? 100 : 1500
         );
       },
-      __DEV__ ? 100 : 1000
+      inDevelopment ? 100 : 1000
     );
-  }
+  };
 
   changeColor = () => {
     const currentColor = getRandomColor();
     this.setState({ currentColor });
     this.props.navigation.setParams({ currentColor: '#' + currentColor });
-  };
-
-  getDistanceForGuess = (guessedValue, actualValue) => {
-    const guessedRgb = this.getRgbIntsForHex(guessedValue);
-    const actualRgb = this.getRgbIntsForHex(actualValue);
-
-    const redDifference = Math.abs(actualRgb.r - guessedRgb.r);
-    const greenDifference = Math.abs(actualRgb.g - guessedRgb.g);
-    const blueDifference = Math.abs(actualRgb.b - guessedRgb.b);
-
-    const distance = redDifference + greenDifference + blueDifference;
-
-    return distance;
-  };
-
-  getRgbIntsForHex = hex => {
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 6), 16);
-
-    return { r, g, b };
-  };
-
-  getPointsForDistance = distance => {
-    if (distance < 25) {
-      return 6;
-    } else if (distance < 30) {
-      return 5;
-    } else if (distance < 60) {
-      return 4;
-    } else if (distance < 100) {
-      return 3;
-    } else if (distance < 150) {
-      return 2;
-    }
-
-    return 1;
   };
 
   guess = () => {
@@ -88,10 +59,10 @@ export default class MainScreen extends Component {
     LayoutAnimation.easeInEaseOut();
     guessedValues.push(guessingValue);
 
-    const shadesAway = this.getDistanceForGuess(guessingValue, currentColor);
-    const points = this.getPointsForDistance(shadesAway);
+    const shadesAway = getDistanceForGuess(guessingValue, currentColor);
+    const currentRoundPoints = getPointsForDistance(shadesAway);
 
-    this.setState({ guessingValue: '', attempting: false, shadesAway, points });
+    this.setState({ guessingValue: '', attempting: false, shadesAway, currentRoundPoints });
 
     setTimeout(() => {
       LayoutAnimation.easeInEaseOut();
@@ -104,7 +75,7 @@ export default class MainScreen extends Component {
   };
 
   getTextForGuess = () => {
-    const { shadesAway, points, guessedValues } = this.state;
+    const { shadesAway, currentRoundPoints, guessedValues } = this.state;
 
     const hasAnotherGo = guessedValues.length < 3;
     const fiveAndSix =
@@ -122,13 +93,13 @@ export default class MainScreen extends Component {
       1: threeTwoOne
     };
 
-    let extraShotsText = hasAnotherGo ? (points > 3 ? ' Keep it up!' : ' Give it another shot.') : '';
+    let extraShotsText = hasAnotherGo ? (currentRoundPoints > 3 ? ' Keep it up!' : ' Give it another shot.') : '';
 
     if (guessedValues.length == 2) {
       extraShotsText = ' One more try.';
     }
 
-    return pointTexts[points] + extraShotsText;
+    return pointTexts[currentRoundPoints] + extraShotsText;
   };
 
   newAttempt = () => {
@@ -149,6 +120,10 @@ export default class MainScreen extends Component {
       this.guess();
       return;
     }
+    if (key == 'Next round') {
+      this.goToNextRound();
+      return;
+    }
 
     let formattedText = guessingValue.toUpperCase();
 
@@ -157,6 +132,48 @@ export default class MainScreen extends Component {
     }
     this.setState({ guessingValue: formattedText + key });
   };
+
+  goToNextRound = () => {
+    const { allRoundsPoints, currentRoundPoints, currentRound } = this.state;
+    this.setState({ allRoundsPoints: [...allRoundsPoints, currentRoundPoints] });
+
+    if (currentRound == 5) {
+      this.setState({ showFinalScreen: true });
+      return;
+    }
+
+    const newColor = getRandomColor();
+    LayoutAnimation.easeInEaseOut();
+    this.setState({
+      guessedValues: [],
+      guessingValue: '',
+      currentColor: newColor,
+      showsUIElements: false,
+      showsQuestion: false,
+      shadesAway: 0,
+      currentRoundPoints: 0,
+      showGuessResult: false,
+      guessingValue: '',
+      guessedValues: [],
+      showFinalResult: false,
+      currentRound: currentRound + 1
+    });
+    this.props.navigation.setParams({
+      currentRound: currentRound + 1,
+      currentColor: '#' + newColor
+    });
+    this.doInitialAnimation();
+  };
+
+  renderFinalScreen = () => (
+    <View style={styles.contentWrapper}>
+      <Text style={{ fontSize: 20 }}>Final score:</Text>
+      <Text style={{ fontSize: 40 }}>24</Text>
+      <TouchableOpacity style={styles.newGameButton}>
+        <Text style={styles.newGameButtonText}>NEW GAME</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   render() {
     const {
@@ -167,12 +184,19 @@ export default class MainScreen extends Component {
       showFinalResult,
       showsQuestion,
       showsUIElements,
-      points
+      currentRoundPoints,
+      showFinalScreen
     } = this.state;
+
+    if (showFinalScreen) {
+      return this.renderFinalScreen();
+    }
+
     const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#14181c';
 
     return (
       <View style={[styles.wrapper, { backgroundColor: '#' + currentColor }]}>
+        <Text style={{ position: 'absolute', top: 15, left: 15 }}>{currentColor}</Text>
         <View style={styles.contentWrapper}>
           {guessedValues.length == 0 && (
             <TouchableOpacity onPress={this.changeColor} style={styles.changeColor}>
@@ -216,7 +240,7 @@ export default class MainScreen extends Component {
               {showGuessResult && (
                 <>
                   <Text style={[styles.guessDescription, { color: textColor }]}>
-                    {this.getTextForGuess()} {showFinalResult && `You got ${points} points for this round.`}
+                    {this.getTextForGuess()} {showFinalResult && `You got ${currentRoundPoints} points for this round.`}
                   </Text>
                 </>
               )}
@@ -247,3 +271,40 @@ export default class MainScreen extends Component {
     );
   }
 }
+
+const getPointsForDistance = distance => {
+  if (distance < 25) {
+    return 6;
+  } else if (distance < 30) {
+    return 5;
+  } else if (distance < 60) {
+    return 4;
+  } else if (distance < 100) {
+    return 3;
+  } else if (distance < 150) {
+    return 2;
+  }
+
+  return 1;
+};
+
+const getDistanceForGuess = (guessedValue, actualValue) => {
+  const guessedRgb = getRgbIntsForHex(guessedValue);
+  const actualRgb = getRgbIntsForHex(actualValue);
+
+  const redDifference = Math.abs(actualRgb.r - guessedRgb.r);
+  const greenDifference = Math.abs(actualRgb.g - guessedRgb.g);
+  const blueDifference = Math.abs(actualRgb.b - guessedRgb.b);
+
+  const distance = redDifference + greenDifference + blueDifference;
+
+  return distance;
+};
+
+const getRgbIntsForHex = hex => {
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 6), 16);
+
+  return { r, g, b };
+};
