@@ -63,7 +63,9 @@ export default class MainScreen extends Component {
   };
 
   getPointsForDistance = distance => {
-    if (distance < 30) {
+    if (distance < 25) {
+      return 6;
+    } else if (distance < 30) {
       return 5;
     } else if (distance < 60) {
       return 4;
@@ -105,13 +107,19 @@ export default class MainScreen extends Component {
     const { shadesAway, points, guessedValues } = this.state;
 
     const hasAnotherGo = guessedValues.length < 3;
+    const fiveAndSix =
+      (hasAnotherGo ? `Incredible!` : `Niice!`) +
+      ` Your guess ${hasAnotherGo ? 'is' : 'was'} ${shadesAway} shades away from the actual color.`;
+
+    const threeTwoOne = `You're ${shadesAway} shades away from the actual color.`;
 
     const pointTexts = {
-      5: (hasAnotherGo ? `Incredible!!` : `Niice!`) + ` Your guess is ${shadesAway} shades away from the actual color.`,
-      4: `Congrats! Your guess is ${shadesAway} shades away from the actual color.`,
-      3: `You're ${shadesAway} shades away from the actual color.`,
-      2: `You're ${shadesAway} shades away from the actual color.`,
-      1: `You're ${shadesAway} shades away from the actual color.`
+      6: fiveAndSix,
+      5: fiveAndSix,
+      4: `Congrats! Your guess ${hasAnotherGo ? 'is' : 'was'} ${shadesAway} shades away from the actual color.`,
+      3: threeTwoOne,
+      2: threeTwoOne,
+      1: threeTwoOne
     };
 
     let extraShotsText = hasAnotherGo ? (points > 3 ? ' Keep it up!' : ' Give it another shot.') : '';
@@ -168,7 +176,7 @@ export default class MainScreen extends Component {
         <View style={styles.contentWrapper}>
           {guessedValues.length == 0 && (
             <TouchableOpacity onPress={this.changeColor} style={styles.changeColor}>
-              <Text style={[styles.changeColorText, { color: currentColor }]}>↻</Text>
+              <Text style={styles.changeColorText}>↻</Text>
             </TouchableOpacity>
           )}
           {showsQuestion && <Text style={[styles.title, { color: textColor }]}>What color is this?</Text>}
@@ -219,8 +227,8 @@ export default class MainScreen extends Component {
                     style={[styles.input, { borderColor: textColor + '44', color: textColor }]}
                     value={guessingValue}
                   >
-                    <Text style={{ color: global.darkColor, fontSize: 18, letterSpacing: 2 }}>{guessingValue}</Text>
-                    <Blinker color={'#f00'} />
+                    <Text style={{ color: global.darkColor, fontSize: 18 }}>{guessingValue}</Text>
+                    <Blinker />
                   </View>
                 </View>
               )}
@@ -229,9 +237,9 @@ export default class MainScreen extends Component {
         </View>
         {showsUIElements && (
           <HexKeyboard
-            color={'#f00'}
-            disabled={showFinalResult}
-            showsNextButton={showFinalResult}
+            color={guessingValue.length < 2 ? '#f00' : guessingValue.length < 4 ? '#0f0' : '#00f'}
+            hasFinishedWriting={guessingValue.length == 6}
+            hasFinishedRound={showFinalResult}
             onKeyPress={this.handleKeyPress}
           />
         )}

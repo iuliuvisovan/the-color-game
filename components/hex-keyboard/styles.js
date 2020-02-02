@@ -18,7 +18,8 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
-    margin: 2
+    margin: 2,
+    backgroundColor: '#fff2'
   },
   buttonText: {
     fontSize: 24,
