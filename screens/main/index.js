@@ -148,12 +148,8 @@ export default class MainScreen extends Component {
       ]
     });
 
-    setTimeout(() => {
-      console.log('summary', this.state.summary);
-    }, 0);
-
     if (currentRound == 5) {
-      this.props.navigation.setParams({ currentColor: 'ffffff', currentRound: 6 });
+      this.props.navigation.setParams({ currentColor: '#ffffff', currentRound: 6 });
       this.setState({ showSummary: true });
       return;
     }
