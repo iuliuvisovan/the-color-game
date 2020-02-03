@@ -1,6 +1,6 @@
 import isDarkColor from 'is-dark-color';
 import React, { Component } from 'react';
-import { View, Text, LayoutAnimation, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, LayoutAnimation, Alert, TouchableOpacity, StatusBar } from 'react-native';
 import styles from './styles';
 import HexKeyboard from '../../components/hex-keyboard';
 import Blinker from '../../components/blinker';
@@ -17,7 +17,7 @@ export default class MainScreen extends Component {
     currentColor: global.currentColor,
     showsQuestion: false,
     showsUIElements: false,
-    allRoundsPoints: [],
+    summary: [],
     currentRoundPoints: 0
   };
 
@@ -68,10 +68,11 @@ export default class MainScreen extends Component {
       LayoutAnimation.easeInEaseOut();
 
       this.setState({ showGuessResult: true });
-      if (guessedValues.length == 3) {
-        this.setState({ showFinalResult: true });
-      }
     }, 500);
+
+    if (guessedValues.length == 3) {
+      this.setState({ showFinalResult: true });
+    }
   };
 
   getTextForGuess = () => {
@@ -120,7 +121,7 @@ export default class MainScreen extends Component {
       this.guess();
       return;
     }
-    if (key == 'Next round') {
+    if (key == 'Next round' || key == 'GG') {
       this.goToNextRound();
       return;
     }
@@ -134,11 +135,26 @@ export default class MainScreen extends Component {
   };
 
   goToNextRound = () => {
-    const { allRoundsPoints, currentRoundPoints, currentRound } = this.state;
-    this.setState({ allRoundsPoints: [...allRoundsPoints, currentRoundPoints] });
+    const { currentColor, currentRoundPoints, shadesAway, guessedValues, currentRound, summary } = this.state;
+    this.setState({
+      summary: [
+        ...summary,
+        {
+          actualValue: currentColor,
+          guessedValue: guessedValues[2],
+          shadesAway,
+          points: currentRoundPoints
+        }
+      ]
+    });
+
+    setTimeout(() => {
+      console.log('summary', this.state.summary);
+    }, 0);
 
     if (currentRound == 5) {
-      this.setState({ showFinalScreen: true });
+      this.props.navigation.setParams({ currentColor: 'ffffff', currentRound: 6 });
+      this.setState({ showSummary: true });
       return;
     }
 
@@ -166,9 +182,65 @@ export default class MainScreen extends Component {
   };
 
   renderFinalScreen = () => (
-    <View style={styles.contentWrapper}>
-      <Text style={{ fontSize: 20 }}>Final score:</Text>
-      <Text style={{ fontSize: 40 }}>24</Text>
+    <View style={[styles.contentWrapper, { justifyContent: 'space-around', paddingBottom: 25 }]}>
+      <View>
+        {this.state.summary.map(({ guessedValue, actualValue, shadesAway, points }, i) => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
+            <View style={styles.roundNumber}>
+              <Text>{i + 1}</Text>
+            </View>
+            <View
+              key={i}
+              style={[
+                styles.summaryGuess,
+                { backgroundColor: '#' + guessedValue, borderBottomRightRadius: 0, borderTopRightRadius: 0 }
+              ]}
+            >
+              <Text style={{ color: getTextColorByBackground(guessedValue) }}>#{guessedValue}</Text>
+            </View>
+            <View
+              key={i}
+              style={[
+                styles.summaryGuess,
+                {
+                  backgroundColor: '#' + actualValue,
+                  marginLeft: -1,
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0
+                }
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  marginBottom: -16,
+                  color: getTextColorByBackground(actualValue)
+                }}
+              >
+                Actually:
+              </Text>
+              <Text style={[styles.guessTitle, { color: getTextColorByBackground(actualValue) }]}>
+                {'\n'} #{actualValue}
+              </Text>
+            </View>
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 16,
+                marginRight: -16
+              }}
+            >
+              <Text style={{ color: global.darkColor, fontSize: 16 }}>Points: {points}</Text>
+              <Text style={{ color: global.darkColor, fontSize: 12 }}>{shadesAway} shades away</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+      <View style={{ alignItems: 'center' }}>
+        <Text style={{ fontSize: 20 }}>Final score:</Text>
+        <Text style={{ fontSize: 40 }}>{this.state.summary.map(x => x.points).reduce((a, b) => a + b)}</Text>
+      </View>
       <TouchableOpacity style={styles.newGameButton}>
         <Text style={styles.newGameButtonText}>NEW GAME</Text>
       </TouchableOpacity>
@@ -185,25 +257,42 @@ export default class MainScreen extends Component {
       showsQuestion,
       showsUIElements,
       currentRoundPoints,
-      showFinalScreen
+      summary,
+      showSummary
     } = this.state;
 
-    if (showFinalScreen) {
+    if (showSummary) {
       return this.renderFinalScreen();
     }
 
-    const textColor = isDarkColor(currentColor || '#ffffff') ? '#fff' : '#14181c';
+    const textColor = isDarkColor('#' + currentColor || '#ffffff') ? '#fff' : '#14181c';
 
     return (
       <View style={[styles.wrapper, { backgroundColor: '#' + currentColor }]}>
-        <Text style={{ position: 'absolute', top: 15, left: 15 }}>{currentColor}</Text>
+        {/* <Text style={{ position: 'absolute', top: 15, left: 15 }}>{currentColor}</Text> */}
+        <StatusBar barStyle={isDarkColor(currentColor || '#ffffff') ? 'light-content' : 'dark-content'} />
         <View style={styles.contentWrapper}>
           {guessedValues.length == 0 && (
-            <TouchableOpacity onPress={this.changeColor} style={styles.changeColor}>
-              <Text style={styles.changeColorText}>↻</Text>
-            </TouchableOpacity>
+            <View style={styles.changeColorButton}>
+              <TouchableOpacity onPress={this.changeColor} style={{ padding: 25, margin: -25 }}>
+                <Text style={styles.changeColorText}>↻</Text>
+              </TouchableOpacity>
+            </View>
           )}
-          {showsQuestion && <Text style={[styles.title, { color: textColor }]}>What color is this?</Text>}
+          {showsQuestion && (
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: textColor,
+                  fontSize: guessedValues.length > 0 ? 14 : 25,
+                  marginTop: guessedValues.length > 0 ? -25 : 0
+                }
+              ]}
+            >
+              What color is this?
+            </Text>
+          )}
           {showsUIElements && (
             <>
               {guessedValues.map((x, i) => (
@@ -220,9 +309,10 @@ export default class MainScreen extends Component {
                       styles.guessTitle,
                       {
                         fontSize: 14,
-                        marginBottom: -20,
+                        marginBottom: -16,
                         color: isDarkColor(x || '#ffffff') ? '#fff' : global.darkColor
-                      }
+                      },
+                      guessedValues.length > i + 1 ? { fontSize: 12 } : {}
                     ]}
                   >
                     Guess #{i + 1}:
@@ -230,7 +320,8 @@ export default class MainScreen extends Component {
                   <Text
                     style={[
                       styles.guessTitle,
-                      { color: isDarkColor('#' + x || '#ffffff') ? '#fff' : global.darkColor }
+                      { color: isDarkColor('#' + x || '#ffffff') ? '#fff' : global.darkColor },
+                      guessedValues.length > i + 1 ? { fontSize: 12 } : {}
                     ]}
                   >
                     {'\n'} #{x}
@@ -240,17 +331,16 @@ export default class MainScreen extends Component {
               {showGuessResult && (
                 <>
                   <Text style={[styles.guessDescription, { color: textColor }]}>
-                    {this.getTextForGuess()} {showFinalResult && `You got ${currentRoundPoints} points for this round.`}
+                    {this.getTextForGuess()}{' '}
+                    {showFinalResult &&
+                      `You got ${currentRoundPoints} point${currentRoundPoints != 1 ? 's' : ''} for this round.`}
                   </Text>
                 </>
               )}
               {!showFinalResult && (
                 <View style={styles.inputWrapper}>
                   <Text style={{ color: textColor, fontSize: 18, marginRight: 4, marginLeft: -12 }}>#</Text>
-                  <View
-                    style={[styles.input, { borderColor: textColor + '44', color: textColor }]}
-                    value={guessingValue}
-                  >
+                  <View style={styles.input} value={guessingValue}>
                     <Text style={{ color: global.darkColor, fontSize: 18 }}>{guessingValue}</Text>
                     <Blinker />
                   </View>
@@ -264,6 +354,7 @@ export default class MainScreen extends Component {
             color={guessingValue.length < 2 ? '#f00' : guessingValue.length < 4 ? '#0f0' : '#00f'}
             hasFinishedWriting={guessingValue.length == 6}
             hasFinishedRound={showFinalResult}
+            isInLastRound={summary.length == 4}
             onKeyPress={this.handleKeyPress}
           />
         )}
@@ -307,4 +398,8 @@ const getRgbIntsForHex = hex => {
   const b = parseInt(hex.substr(4, 6), 16);
 
   return { r, g, b };
+};
+
+const getTextColorByBackground = backgroundColor => {
+  return isDarkColor(backgroundColor || '#ffffff') ? '#fff' : global.darkColor;
 };

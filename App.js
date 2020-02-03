@@ -17,7 +17,10 @@ const StackNavigator = createAppContainer(
       screen: MainScreen,
 
       navigationOptions: ({ navigation }) => ({
-        title: `Round ${(navigation.state.params || {}).currentRound || 1}/5`,
+        title:
+          (navigation.state.params || {}).currentRound == 6
+            ? 'Summary'
+            : `Round ${(navigation.state.params || {}).currentRound || 1}/5`,
         headerStyle: {
           backgroundColor: (navigation.state.params || {}).currentColor || '#' + global.currentColor
         },
@@ -34,7 +37,7 @@ const StackNavigator = createAppContainer(
 
 export default class App extends Component {
   componentDidMount() {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
+    UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
   render() {

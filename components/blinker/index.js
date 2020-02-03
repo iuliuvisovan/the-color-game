@@ -16,10 +16,7 @@ export default class HexKeyboard extends Component {
   render() {
     const { color } = this.props;
     const { isVisible } = this.state;
-    if (!isVisible) {
-      return null;
-    }
 
-    return <View style={[styles.blinker, { borderColor: color }]} />;
+    return <View style={[styles.blinker, { borderColor: color, opacity: isVisible ? 1 : 0 }]} />;
   }
 }

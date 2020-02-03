@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export default StyleSheet.create({
   wrapper: {
@@ -23,11 +23,9 @@ export default StyleSheet.create({
   },
   input: {
     flexDirection: 'row',
-    borderWidth: 1,
-    width: 100,
+    width: Platform.OS == 'ios' ? 140 : 100,
     borderRadius: 6,
     borderColor: '#fff',
-    borderWidth: 2,
     padding: 8,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
@@ -35,21 +33,21 @@ export default StyleSheet.create({
     overflow: 'hidden'
   },
   newGameButton: {
-    padding: 8,
-    paddingHorizontal: 14,
+    padding: 12,
+    paddingHorizontal: 18,
     borderRadius: 24,
-    marginTop: 75,
-    borderWidth: 2,
-    backgroundColor: '#14181c'
+    borderWidth: 1,
+    backgroundColor: '#fff',
+    elevation: 5,
+    shadowOpacity: 0.55,
+    shadowOffset: {
+      top: 5
+    }
   },
   newGameButtonText: {
     fontSize: 16,
-    color: '#fff',
+    color: '#14181c',
     fontWeight: '700'
-  },
-  guessTitle: {
-    color: '#fff',
-    fontSize: 18
   },
   guess: {
     marginTop: 16,
@@ -62,13 +60,21 @@ export default StyleSheet.create({
     borderWidth: 0.8,
     borderColor: '#fff'
   },
+  summaryGuess: {
+    width: 100,
+    height: 60,
+    borderRadius: 6,
+    borderColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   guessDescription: {
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
     marginTop: 16
   },
-  changeColor: {
+  changeColorButton: {
     position: 'absolute',
     top: 15,
     right: 15,
@@ -83,9 +89,9 @@ export default StyleSheet.create({
     backgroundColor: '#fff'
   },
   changeColorText: {
-    fontSize: 28,
-    marginTop: -8,
-    marginLeft: -3
+    fontSize: Platform.OS == 'ios' ? 18 : 28,
+    marginTop: Platform.OS == 'ios' ? -2 : -8,
+    marginLeft: Platform.OS == 'ios' ? 1 : -3
   },
   colors: {
     position: 'absolute',
@@ -97,5 +103,15 @@ export default StyleSheet.create({
     width: 27,
     height: 50,
     opacity: 0.25
+  },
+  roundNumber: {
+    borderWidth: 1,
+    borderColor: '#14181c44',
+    width: 24,
+    height: 24,
+    marginRight: 8,
+    borderRadius: 24 / 2,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });

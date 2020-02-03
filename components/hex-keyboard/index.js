@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions, Platform } from 'react-native';
 import styles from './styles';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,17 +23,12 @@ export default class HexKeyboard extends Component {
   };
 
   render() {
-    const { color, hasFinishedRound, hasFinishedWriting } = this.props;
-    const guessButton = hasFinishedRound ? 'Next round' : 'Guess!';
+    const { hasFinishedRound, isInLastRound } = this.props;
+    const guessButton = hasFinishedRound ? (isInLastRound ? 'GG' : 'Next round') : 'Guess!';
     const keys = [1, 2, 3, 4, 5, '⌫', 6, 7, 8, 9, 0, guessButton, 'A', 'B', 'C', 'D', 'E', 'F'];
 
     return (
       <View style={styles.wrapper}>
-        {!hasFinishedWriting && (
-          <View style={styles.arrow}>
-            <Text style={{ color, fontSize: 24, transform: [{ rotate: '-90deg' }] }}>›</Text>
-          </View>
-        )}
         {keys.map(key => (
           <TouchableOpacity onPress={() => this.props.onKeyPress(key)} activeOpacity={0.45} key={key}>
             <View
@@ -43,7 +38,14 @@ export default class HexKeyboard extends Component {
                 { opacity: this.isEnabled(key) ? 1 : 0.4 }
               ]}
             >
-              <Text style={[styles.buttonText, { color: '#fff', fontSize: key.length > 1 ? 18 : 24 }]}>{key}</Text>
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: '#fff', fontSize: key.length > 1 ? (key.length > 8 ? 16 : 20) : 24 }
+                ]}
+              >
+                {key}
+              </Text>
             </View>
           </TouchableOpacity>
         ))}
