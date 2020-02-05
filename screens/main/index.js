@@ -23,6 +23,7 @@ export default class MainScreen extends Component {
 
   componentDidMount() {
     this.doInitialAnimation();
+    this.props.navigation.navigate('HowToPlay');
   }
 
   doInitialAnimation = () => {
